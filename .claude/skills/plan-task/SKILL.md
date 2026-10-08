@@ -1,6 +1,6 @@
 ---
 name: plan-task
-description: Plan the implementation of a GitHub issue in this wedding-website repo before any code is written. Sizes the work, then writes a small-task plan from docs/templates/plan.md or, for large work, runs the Spec Kit flow (speckit-specify → speckit-plan → speckit-tasks) and splits it into sub-issues. Use this whenever the user wants to plan, scope, design, break down, or "figure out how to build" an issue, or asks to start coding on an issue that has no plan yet.
+description: Plan the implementation of a GitHub issue in this wedding-website repo before any code is written. Sizes the work, then writes a small-task plan from docs/templates/plan.md and posts it as a comment on the issue, or, for large work, runs the Spec Kit flow (speckit-specify → speckit-plan → speckit-tasks) and splits it into sub-issues. Use this whenever the user wants to plan, scope, design, break down, or "figure out how to build" an issue, or asks to start coding on an issue that has no plan yet.
 argument-hint: "<issue#>"
 ---
 
@@ -25,15 +25,15 @@ When unsure, lean small. A small plan that turns out too big can still be promot
 
 ## 2a. Small path
 
-1. Copy `docs/templates/plan.md` to `docs/plans/<#>-<slug>.md`, using the worktree's slug.
+1. Copy `docs/templates/plan.md` to a scratchpad file (`<scratchpad>/plan-<#>.md`). Keep the `<!-- issue-plan -->` marker as line 1. The plan is not committed to the repo.
 2. Fill every section. Each step is one red → green → refactor cycle, named by the behavior it adds, with the failing test spelled out ("POST /rsvp with an unknown code returns 404"). Pure styling or copy steps can skip the test. If the issue is a sub-issue of an epic, link the spec and the task IDs it covers.
 3. Show the plan to the user and revise until they approve. This is the point to change direction, so ask about anything uncertain rather than guessing.
-4. Commit it (`docs: add plan for #<#>`) and push (`git push -u origin HEAD`). The link in the next step 404s until the branch is on GitHub.
-5. Comment on the issue with a link to the plan, so it can be found from GitHub:
+4. Post it as a single comment on the issue, so it can be found from GitHub and ticked in place by `start-work`:
    ```bash
-   gh issue comment <#> --body "Plan: https://github.com/CSJarvis43/wedding_website/blob/<branch>/docs/plans/<file>"
+   gh issue comment <#> --body-file <scratchpad>/plan-<#>.md
    ```
-6. Suggest `start-work <#>`.
+   If a plan comment already exists (`gh api repos/CSJarvis43/wedding_website/issues/<#>/comments --jq '[.[] | select(.body | startswith("<!-- issue-plan -->"))] | last | .id'`), edit it instead of posting a second one: `gh api -X PATCH repos/CSJarvis43/wedding_website/issues/comments/<id> -F body=@<scratchpad>/plan-<#>.md`.
+5. Suggest `start-work <#>`.
 
 ## 2b. Large path
 
