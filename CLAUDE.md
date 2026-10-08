@@ -91,6 +91,12 @@ Rules the skills follow:
 
 ## Commands
 
+Claude Code hooks (run from the repo root). Run these after changing anything in `.claude/hooks/`:
+
+```bash
+bash .claude/hooks/tests/run.sh
+```
+
 Backend (run from `backend/`):
 
 ```bash
