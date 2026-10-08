@@ -6,17 +6,22 @@ A wedding website with a Python backend API and a React frontend. Guests read ev
 
 | Area | Choice |
 |---|---|
-| Backend | Python 3.13, managed with `uv` (framework not yet chosen) |
+| Backend | Python 3.13 + FastAPI, managed with `uv` |
+| Backend data | SQLModel (SQLAlchemy + Pydantic), Alembic migrations, Postgres |
+| Admin auth | Server-side session cookie (HTTP-only, secure, same-site) for the two admin accounts |
 | Backend lint/format | `ruff` (lint + format) |
 | Backend tests | `pytest` |
 | Frontend | React + TypeScript, built with Vite (single-page app) |
 | Frontend routing / data | React Router, TanStack Query |
+| Styling | Tailwind CSS + shadcn/ui (components copied into the repo) |
 | Frontend package manager | `pnpm`, Node 24 LTS |
 | Frontend lint/format | ESLint, Prettier |
 | Frontend tests | Vitest + React Testing Library |
+| Hosting | Render (static site + web service + Postgres), defined in `render.yaml` |
+| Photo storage | Cloudflare R2 (private bucket, presigned uploads) |
 | Secret scanning | `gitleaks` (CI) |
 
-The frontend is a static build. All server-side logic (auth, guest data, RSVPs, uploads) lives in the Python backend. Don't add a Node server.
+The frontend is a static build. All server-side logic (auth, guest data, RSVPs, uploads) lives in the Python backend. Don't add a Node server. The reasoning and rejected alternatives for each choice are in `docs/decisions.md`. Record new decisions there.
 
 ## Repo layout
 
