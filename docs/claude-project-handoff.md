@@ -3,7 +3,7 @@
 Context for a Claude Project. It summarizes the decisions made so far so new conversations start from the same place. The source of truth for day-to-day conventions is `CLAUDE.md` in the repo.
 
 - **Repo:** https://github.com/CSJarvis43/wedding_website (public; contains no PII by design)
-- **Status (2026-10-08):** SDLC scaffolding done: conventions, CI, Claude Code settings/hooks, seven workflow skills, and Spec Kit. No application code yet.
+- **Status (2026-10-08):** SDLC scaffolding done (conventions, CI, hooks with a test suite, seven workflow skills, Spec Kit), and the core stack is decided (see `docs/decisions.md`). No application code yet. Next: scaffold `backend/` and `frontend/`.
 
 ## What we're building
 
@@ -22,8 +22,13 @@ A wedding website for guests and for the couple:
 | Frontend | React + TypeScript single-page app, built with Vite |
 | Frontend routing / data | React Router, TanStack Query |
 | Frontend tooling | pnpm, Node 24 LTS, ESLint, Prettier, Vitest + React Testing Library |
-| Backend | Python 3.13, managed with `uv` |
+| Backend | Python 3.13 + FastAPI, managed with `uv` |
+| Backend data | SQLModel + Alembic, Postgres |
+| Admin auth | Server-side session cookie for the two admin accounts |
 | Backend tooling | ruff (lint + format), pytest |
+| Styling | Tailwind CSS + shadcn/ui |
+| Hosting | Render: static site + web service + Postgres, defined in `render.yaml` (about $13–30/mo; confirm on render.com/pricing) |
+| Photo storage | Cloudflare R2, private bucket, presigned uploads |
 | CI | GitHub Actions: gitleaks secret scan, backend checks, frontend checks |
 | Planning | Spec Kit v1.0.11 for large features; a plan template for small tasks |
 
@@ -33,14 +38,17 @@ A wedding website for guests and for the couple:
 - **Next.js:** it brings its own Node server, which would duplicate the Python backend.
 - **Astro with React islands:** too much of the site is interactive, so it would mean two rendering models in one project.
 
+**Why FastAPI:** the admin side is a **custom React dashboard**, so Django's built-in admin would go unused. FastAPI is lean and typed, and its OpenAPI schema can drive typed frontend clients. Rejected: Django + Ninja, Litestar.
+
+**Why Render:** one platform, the simplest setup, predictable fixed plans, and infrastructure as code reviewed in PRs. Rejected: Railway (usage billing), Cloudflare Pages + Fly + Neon (three services to wire), a VPS (we'd own ops).
+
+**Why R2:** no egress fees for a gallery guests browse repeatedly, and it's S3-compatible. Photos are PII, so access rules belong in the photo feature's spec.
+
+**Why Tailwind + shadcn/ui:** a custom guest-facing look plus accessible forms and tables for the admin, with no library theme to fight. Rejected: Mantine, plain CSS Modules.
+
 ## Still to decide
 
-- **Backend framework** (e.g. FastAPI vs Django). The tooling above works with either.
-- **Database** and where it's hosted.
-- **Styling approach** (e.g. Tailwind vs a component library).
-- **Hosting** for the frontend (static) and backend.
-- **Admin auth** approach.
-- **Photo storage** (object storage provider, size limits, moderation).
+- **Photo rules:** size limits, moderation, and who can see the gallery (decide in the photo-uploads spec).
 - **Guest lookup** method (name match vs invite code).
 - **Registry:** links to external registries or a built-in fund.
 - **Visual design** and branding.
