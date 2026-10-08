@@ -23,8 +23,11 @@ The frontend is a static build. All server-side logic (auth, guest data, RSVPs, 
 ```
 backend/    Python API (pyproject.toml, src/, tests/)
 frontend/   React + Vite app (package.json, src/)
-docs/       Design specs, plans, handoff notes
-.claude/    Shared Claude Code settings and hooks
+docs/       Plans (docs/plans/), templates, handoff notes
+specs/      Spec Kit specs for large work (specs/<#>-<slug>/)
+.specify/   Spec Kit config, scripts, templates, constitution
+.worktrees/ One git worktree per issue (git-ignored)
+.claude/    Shared Claude Code settings, hooks, and skills
 .github/    CI workflow, PR and issue templates
 ```
 
@@ -42,20 +45,41 @@ This site handles real guest data. **Never hardcode PII or secrets** anywhere in
 - Tests and seed data use obviously fake data: `Jane Doe`, `guest@example.com`, `555-0100`, `123 Example St`.
 - Public wedding content (venue name, date, schedule) is fine in the frontend. When in doubt, ask.
 - Claude Code is blocked from reading, editing, or shelling into `.env*` (except `.env.example`) and `secrets/` by `.claude/settings.json` and `.claude/hooks/protect-secrets.sh`. Don't try to work around this. Ask the user to check or change a value.
-- The Bash hook blocks any command whose text mentions those paths, including commit messages and PR bodies. When that prose needs to mention them, write it to a file in the scratchpad and pass `git commit -F <file>` / `gh pr create --body-file <file>`.
+- The Bash hook checks the command's bare words, ignoring quoted strings and heredoc bodies, so commit messages and PR text can mention these paths. Writing long prose to a scratchpad file and passing `-F` / `--body-file` is still the tidiest way.
 
 ## Workflow
 
-Every change goes **issue → branch → PR → green CI → squash merge**. `main` is protected: no direct pushes, no force pushes, CI must pass.
+Every change goes **issue → worktree → plan → test-first implementation → PR → green CI → squash merge**, using the project skills in `.claude/skills/`:
 
-1. **Issue first.** Each piece of work has a GitHub issue. Create one if it doesn't exist (`gh issue create`).
-2. **Branch** off an up-to-date `main`: `<type>/<issue#>-<short-slug>`, e.g. `feat/12-rsvp-lookup`, `fix/20-meal-choice-validation`.
-3. **Commits** use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`. Use the imperative mood and keep the subject under ~72 chars.
-4. **Before opening a PR**, run the full checks for the parts you touched (see Commands), then run a code review (`/code-review`) and address the findings.
-5. **PR** uses the template, references the issue (`Closes #12`), and stays focused on one issue.
-6. **Merge** with squash once CI is green. The branch is deleted automatically.
+```
+create-issue → create-worktree → plan-task → start-work → create-pr → /finish-work
+                                    │
+                    large ──────────┴──── small
+          Spec Kit spec PR (epic)        docs/plans/<#>-<slug>.md
+          → sub-issues, each through
+            the small path
+```
 
-Claude Code hooks block `git commit`/`git push` on `main` and all force pushes.
+| Skill | Use it to |
+|---|---|
+| `create-issue` | File the issue every piece of work starts from |
+| `create-worktree <#>` | Create or reopen `.worktrees/<#>-<slug>` on `<type>/<#>-<slug>` |
+| `plan-task <#>` | Size the work. Small: plan from `docs/templates/plan.md`. Large: Spec Kit epic + sub-issues |
+| `start-work <#>` | Implement the approved plan, red → green → refactor, one commit per step |
+| `create-pr` | Checks, PII scan, code review, PR from `.github/pull_request_template.md` |
+| `/finish-work <#>` | Squash-merge after confirmation, clean up the worktree and branch (manual only) |
+| `update-handoff` | Refresh `docs/claude-project-handoff.md` when a decision changes, and copy it |
+
+These project skills are the canonical workflow and don't depend on any plugin. In this repo, use them instead of similar global skills, such as superpowers' worktree, plan, or finish-branch skills, and instead of `speckit-implement`.
+
+Rules the skills follow:
+
+- **All edits happen in a worktree** under `.worktrees/` (git-ignored). The main checkout only tracks `main`, and `.claude/hooks/require-worktree.sh` blocks file edits there.
+- **Branches:** `<type>/<issue#>-<slug>`, e.g. `feat/12-rsvp-lookup`.
+- **Commits** use [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `test:`, `refactor:`, `docs:`, `chore:`, `ci:`. Imperative mood, subject under ~72 chars.
+- **PRs** use the template, reference the issue (`Closes #12`, or `Part of #N` for an epic's spec), and stay focused on one issue.
+- **`main` is protected:** PRs only, `gitleaks`/`backend`/`frontend` must pass, no force pushes. Hooks also block `git commit`/`git push` on `main` and all force pushes.
+- **Spec Kit** (v1.0.11, `.specify/`) handles large work. Its constitution, `.specify/memory/constitution.md`, mirrors this file, so change both together.
 
 ## Testing: TDD for logic
 
@@ -90,7 +114,7 @@ pnpm typecheck               # tsc --noEmit
 
 ## Definition of done
 
-- [ ] Linked to an issue, on a feature branch
+- [ ] Linked to an issue, built in its worktree from an approved plan
 - [ ] Tests written first for any logic; all tests pass
 - [ ] Lint, format, and typecheck are clean
 - [ ] No PII or secrets added; new settings added to `.env.example`

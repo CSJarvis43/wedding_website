@@ -9,6 +9,9 @@ secrets/
 # --- Claude Code (personal settings) ---
 .claude/settings.local.json
 
+# --- Worktrees (one per issue) ---
+.worktrees/
+
 # --- Python ---
 __pycache__/
 *.py[cod]
