@@ -29,8 +29,8 @@ Add a decision log (`docs/decisions.md`) with one short entry per decision: cont
 
 ## Verification
 
-- [ ] `CLAUDE.md`, the constitution, the handoff, and `docs/decisions.md` name the same choices (grep each for FastAPI, Render, R2, shadcn)
-- [ ] `pii-scan.py` is clean
+- [x] `CLAUDE.md`, the constitution, the handoff, and `docs/decisions.md` name the same choices (grep each for FastAPI, Render, R2, shadcn)
+- [x] `pii-scan.py` is clean
 
 ## Config/PII impact
 
