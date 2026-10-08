@@ -42,6 +42,7 @@ This site handles real guest data. **Never hardcode PII or secrets** anywhere in
 - Tests and seed data use obviously fake data: `Jane Doe`, `guest@example.com`, `555-0100`, `123 Example St`.
 - Public wedding content (venue name, date, schedule) is fine in the frontend. When in doubt, ask.
 - Claude Code is blocked from reading, editing, or shelling into `.env*` (except `.env.example`) and `secrets/` by `.claude/settings.json` and `.claude/hooks/protect-secrets.sh`. Don't try to work around this. Ask the user to check or change a value.
+- The Bash hook blocks any command whose text mentions those paths, including commit messages and PR bodies. When that prose needs to mention them, write it to a file in the scratchpad and pass `git commit -F <file>` / `gh pr create --body-file <file>`.
 
 ## Workflow
 
