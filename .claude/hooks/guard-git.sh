@@ -12,21 +12,24 @@ block() {
   exit 2
 }
 
-if echo "$cmd" | grep -Eq 'git[[:space:]]+push([[:space:]].*)?[[:space:]](-f|--force|--force-with-lease|--force-if-includes)([[:space:]=]|$)'; then
-  block "force pushes are not allowed."
-fi
+# Check each chained command on its own, so e.g. `git push && gh pr create --base main`
+# isn't mistaken for a push to main.
+segments=$(printf '%s\n' "$cmd" | awk '{ gsub(/&&|\|\||;|\|/, "\n"); print }')
 
-if echo "$cmd" | grep -Eq 'git[[:space:]]+push([[:space:]].*)?[[:space:]+:]main([[:space:]]|$)'; then
-  block "pushing to main is not allowed."
-fi
+while IFS= read -r seg; do
+  echo "$seg" | grep -Eq '^[[:space:]]*git[[:space:]]+(push|commit)([[:space:]]|$)' || continue
 
-if [ "$branch" = "main" ]; then
-  if echo "$cmd" | grep -Eq 'git[[:space:]]+commit([[:space:]]|$)'; then
-    block "committing directly on main is not allowed."
+  if echo "$seg" | grep -Eq '^[[:space:]]*git[[:space:]]+push([[:space:]]|$)'; then
+    if echo "$seg" | grep -Eq '[[:space:]](-f|--force|--force-with-lease|--force-if-includes)([[:space:]=]|$)'; then
+      block "force pushes are not allowed."
+    fi
+    if echo "$seg" | grep -Eq '[[:space:]+:]main([[:space:]]|$)'; then
+      block "pushing to main is not allowed."
+    fi
+    [ "$branch" = "main" ] && block "pushing from main is not allowed."
+  else
+    [ "$branch" = "main" ] && block "committing directly on main is not allowed."
   fi
-  if echo "$cmd" | grep -Eq 'git[[:space:]]+push([[:space:]]|$)'; then
-    block "pushing from main is not allowed."
-  fi
-fi
+done <<< "$segments"
 
 exit 0
