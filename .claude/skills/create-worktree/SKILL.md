@@ -31,4 +31,4 @@ All development in this repo happens in a git worktree, one per issue, under `.w
    ! cp <main checkout>/.env <worktree path>/.env
    ```
 
-6. **Report:** the branch, the path, and the next step. That's usually `plan-task <#>`. If a plan for this issue already exists (a comment starting with `<!-- issue-plan -->`, checked with `gh api repos/CSJarvis43/wedding_website/issues/<#>/comments --jq '.[] | select(.body | startswith("<!-- issue-plan -->")) | .id'`, or `specs/<#>-*/`), say so and suggest `start-work` instead.
+6. **Report:** the branch, the path, and the next step. That's usually `plan-task <#>`. If a plan for this issue already exists (a comment starting with `<!-- issue-plan -->`, checked with `gh api --paginate repos/{owner}/{repo}/issues/<#>/comments --jq '.[] | select(.body | startswith("<!-- issue-plan -->")) | .id'`, or `specs/<#>-*/`), say so and suggest `start-work` instead.

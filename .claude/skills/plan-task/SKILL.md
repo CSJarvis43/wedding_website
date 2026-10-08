@@ -32,7 +32,7 @@ When unsure, lean small. A small plan that turns out too big can still be promot
    ```bash
    gh issue comment <#> --body-file <scratchpad>/plan-<#>.md
    ```
-   If a plan comment already exists (`gh api repos/CSJarvis43/wedding_website/issues/<#>/comments --jq '[.[] | select(.body | startswith("<!-- issue-plan -->"))] | last | .id'`), edit it instead of posting a second one: `gh api -X PATCH repos/CSJarvis43/wedding_website/issues/comments/<id> -F body=@<scratchpad>/plan-<#>.md`.
+   If a plan comment already exists (`gh api --paginate repos/{owner}/{repo}/issues/<#>/comments --jq '.[] | select(.body | startswith("<!-- issue-plan -->")) | .id' | tail -1`), edit it instead of posting a second one: `gh api -X PATCH repos/{owner}/{repo}/issues/comments/<id> -F body=@<scratchpad>/plan-<#>.md`.
 5. Suggest `start-work <#>`.
 
 ## 2b. Large path
@@ -53,7 +53,7 @@ Large work becomes an **epic**. The epic's own PR contains only the spec. The bu
    - Create each with `create-issue`. Put `Part of #<epic>` and the task IDs in the body.
    - Link each as a GitHub sub-issue:
      ```bash
-     gh api -X POST repos/CSJarvis43/wedding_website/issues/<epic>/sub_issues -F sub_issue_id=$(gh api repos/CSJarvis43/wedding_website/issues/<child> --jq .id)
+     gh api -X POST repos/{owner}/{repo}/issues/<epic>/sub_issues -F sub_issue_id=$(gh api repos/{owner}/{repo}/issues/<child> --jq .id)
      ```
      If that call fails, fall back to a task-list checklist (`- [ ] #<child>`) in an epic comment.
 6. Each sub-issue then goes `create-worktree` → `plan-task` (small path, linking the spec) → `start-work` → `create-pr`.

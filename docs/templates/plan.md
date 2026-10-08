@@ -1,5 +1,4 @@
 <!-- issue-plan -->
-<!-- This is the body of the plan comment on the issue. Keep the marker line above as line 1: skills find the plan by it. -->
 # Plan: #<issue> <title>
 
 **Issue:** #<issue>. **Branch:** `<type>/<issue>-<slug>`. **Size:** small.

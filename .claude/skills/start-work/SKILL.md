@@ -13,7 +13,8 @@ This skill turns an approved plan into commits, one red → green → refactor c
 - **In the worktree.** `git rev-parse --show-toplevel` must be under `.worktrees/` and the branch must contain `/<#>-`. If not, run `create-worktree <#>`.
 - **A plan exists.** The plan is the comment on the issue whose first line is `<!-- issue-plan -->` (or `specs/<epic>-<slug>/` for a sub-issue of an epic). Fetch it:
   ```bash
-  gh api repos/CSJarvis43/wedding_website/issues/<#>/comments --jq '[.[] | select(.body | startswith("<!-- issue-plan -->"))] | last | {id, body}'
+  id=$(gh api --paginate repos/{owner}/{repo}/issues/<#>/comments --jq '.[] | select(.body | startswith("<!-- issue-plan -->")) | .id' | tail -1)
+  gh api repos/{owner}/{repo}/issues/comments/$id --jq .body
   ```
   If there's no such comment, stop and run `plan-task <#>`. Coding without an approved plan is exactly what this workflow avoids. If this is an epic issue (labeled `epic`), its work is done in the sub-issues, so point the user at those.
 - **Read the plan, `CLAUDE.md`, and the files the plan touches.** If the plan links a spec (`specs/<epic>-<slug>/`), read the relevant parts too.
@@ -29,12 +30,12 @@ This skill turns an approved plan into commits, one red → green → refactor c
    - frontend: `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test`
 5. **Commit** code and tests using the plan's Conventional Commit message (`feat: …`, `fix: …`, `test: …`), then **tick the step** in the plan comment (`- [ ]` → `- [x]`), editing the one comment in place:
    ```bash
-   id=$(gh api repos/CSJarvis43/wedding_website/issues/<#>/comments --jq '[.[] | select(.body | startswith("<!-- issue-plan -->"))] | last | .id')
-   gh api repos/CSJarvis43/wedding_website/issues/comments/$id --jq .body > <scratchpad>/plan.md
+   id=$(gh api --paginate repos/{owner}/{repo}/issues/<#>/comments --jq '.[] | select(.body | startswith("<!-- issue-plan -->")) | .id' | tail -1)
+   gh api repos/{owner}/{repo}/issues/comments/$id --jq .body > <scratchpad>/plan.md
    # change the step's `- [ ]` to `- [x]` in <scratchpad>/plan.md
-   gh api -X PATCH repos/CSJarvis43/wedding_website/issues/comments/$id -F body=@<scratchpad>/plan.md
+   gh api -X PATCH repos/{owner}/{repo}/issues/comments/$id -F body=@<scratchpad>/plan.md
    ```
-   The plan isn't a file in the repo, so a tick is never part of a commit.
+   Check that the output shows the step as `[x]`. If the edit failed, retry before moving on, since an unticked step gets redone on resume. The plan isn't a file in the repo, so a tick is never part of a commit.
 
 Purely visual or copy steps skip red/green but still get checked and committed.
 
