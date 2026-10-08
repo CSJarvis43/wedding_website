@@ -59,7 +59,7 @@ A wedding website for guests and for the couple:
 - **Workflow:** issue → worktree → plan → test-first implementation → PR → green CI → squash merge, driven by project skills in `.claude/skills/`:
   - `create-issue`: file the issue every piece of work starts from.
   - `create-worktree <#>`: one git worktree per issue at `.worktrees/<#>-<slug>`, on branch `<type>/<#>-<slug>`.
-  - `plan-task <#>`: sizes the work. Small → `docs/plans/<#>-<slug>.md` from a template. Large → an epic: a Spec Kit spec (`specs/<#>-<slug>/`) merged first, then sub-issues that each go through the small path.
+  - `plan-task <#>`: sizes the work. Small → a plan comment on the issue (first line `<!-- issue-plan -->`, from `docs/templates/plan.md`), ticked in place and not committed. Large → an epic: a Spec Kit spec (`specs/<#>-<slug>/`) merged first, then sub-issues that each go through the small path.
   - `start-work <#>`: implements the approved plan red → green → refactor, one commit per step.
   - `create-pr`: runs checks, a PII scan, and a code review, then opens the PR from the template (`Closes #N`).
   - `/finish-work <#>`: manual only. Confirms, squash-merges, and cleans up the worktree.

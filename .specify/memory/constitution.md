@@ -39,10 +39,10 @@ Build what the current issue needs. Prefer boring, well-known libraries. Any ext
 - Work flows issue → worktree → plan → test-first implementation → PR → green CI → squash merge, through the project skills: `create-issue`, `create-worktree`, `plan-task`, `start-work`, `create-pr`, `finish-work`.
 - All edits happen in a git worktree under `.worktrees/`, never in the main checkout. Branches are named `<type>/<issue#>-<slug>`. Commits follow Conventional Commits.
 - `main` is protected: PRs only, required checks, no force pushes.
-- Small tasks are planned in `docs/plans/<issue#>-<slug>.md`. Large tasks are specified in `specs/<issue#>-<slug>/` with Spec Kit (`speckit-specify` → `speckit-plan` → `speckit-tasks`) and implemented through sub-issues. `start-work` replaces `speckit-implement` in this repo.
+- Small tasks are planned in a single comment on the issue (first line `<!-- issue-plan -->`, ticked in place by `start-work`) and the plan is not committed. Large tasks are specified in `specs/<issue#>-<slug>/` with Spec Kit (`speckit-specify` → `speckit-plan` → `speckit-tasks`) and implemented through sub-issues. `start-work` replaces `speckit-implement` in this repo.
 
 ## Governance
 
 This constitution and `CLAUDE.md` are the source of truth for how work is done. Every spec, plan, and PR must comply. Amendments go through a normal PR that updates both files and bumps the version: MAJOR for removing or redefining a principle, MINOR for adding one, PATCH for clarifications.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08
+**Version**: 1.2.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08
