@@ -28,7 +28,7 @@ The frontend is a static build. All server-side logic (auth, guest data, RSVPs, 
 ```
 backend/    Python API (pyproject.toml, src/, tests/)
 frontend/   React + Vite app (package.json, src/)
-docs/       Plans (docs/plans/), templates, handoff notes
+docs/       Templates (docs/templates/), handoff notes
 specs/      Spec Kit specs for large work (specs/<#>-<slug>/)
 .specify/   Spec Kit config, scripts, templates, constitution
 .worktrees/ One git worktree per issue (git-ignored)
@@ -54,13 +54,13 @@ This site handles real guest data. **Never hardcode PII or secrets** anywhere in
 
 ## Workflow
 
-Every change goes **issue → worktree → plan → test-first implementation → PR → green CI → squash merge**, using the project skills in `.claude/skills/`:
+Every change goes **issue → worktree → plan → test-first implementation → PR → green CI → squash merge**, using the project skills in `.claude/skills/`. Small-task plans live in a single issue comment (first line `<!-- issue-plan -->`) that `start-work` ticks in place, and are not committed. Large-task specs are committed under `specs/`.
 
 ```
 create-issue → create-worktree → plan-task → start-work → create-pr → /finish-work
                                     │
                     large ──────────┴──── small
-          Spec Kit spec PR (epic)        docs/plans/<#>-<slug>.md
+          Spec Kit spec PR (epic)        plan comment on the issue
           → sub-issues, each through
             the small path
 ```
@@ -69,7 +69,7 @@ create-issue → create-worktree → plan-task → start-work → create-pr → 
 |---|---|
 | `create-issue` | File the issue every piece of work starts from |
 | `create-worktree <#>` | Create or reopen `.worktrees/<#>-<slug>` on `<type>/<#>-<slug>` |
-| `plan-task <#>` | Size the work. Small: plan from `docs/templates/plan.md`. Large: Spec Kit epic + sub-issues |
+| `plan-task <#>` | Size the work. Small: plan from `docs/templates/plan.md`, posted as a comment on the issue. Large: Spec Kit epic + sub-issues |
 | `start-work <#>` | Implement the approved plan, red → green → refactor, one commit per step |
 | `create-pr` | Checks, PII scan, code review, PR from `.github/pull_request_template.md` |
 | `/finish-work <#>` | Squash-merge after confirmation, clean up the worktree and branch (manual only) |

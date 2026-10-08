@@ -1,3 +1,4 @@
+<!-- issue-plan -->
 # Plan: #<issue> <title>
 
 **Issue:** #<issue>. **Branch:** `<type>/<issue>-<slug>`. **Size:** small.
