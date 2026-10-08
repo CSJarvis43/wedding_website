@@ -28,7 +28,7 @@ The frontend is a static build. All server-side logic (auth, guest data, RSVPs, 
 ```
 backend/    Python API (pyproject.toml, src/, tests/)
 frontend/   React + Vite app (package.json, src/)
-docs/       Templates, handoff notes, and historical plans (docs/plans/, no longer added to)
+docs/       Templates (docs/templates/), handoff notes
 specs/      Spec Kit specs for large work (specs/<#>-<slug>/)
 .specify/   Spec Kit config, scripts, templates, constitution
 .worktrees/ One git worktree per issue (git-ignored)
