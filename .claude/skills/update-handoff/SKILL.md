@@ -16,7 +16,7 @@ The main checkout is read-only, so make the change inside a worktree, ideally th
 Read, in the worktree:
 - `CLAUDE.md`: stack, layout, conventions, workflow.
 - `.specify/memory/constitution.md`: principles.
-- `specs/*/spec.md` and `docs/plans/*.md`: features specified or built.
+- `specs/*/spec.md` and the plan comments on recent issues (`gh issue list --state all --limit 15`): features specified or built.
 - The existing handoff, to keep its structure and history.
 - Recent merged PRs (`gh pr list --state merged --limit 15`) for decisions not yet captured.
 
