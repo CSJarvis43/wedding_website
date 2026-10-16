@@ -18,7 +18,10 @@ Every branch, plan, and PR in this repo hangs off a GitHub issue number, so fili
 2. **Draft the issue.**
    - Title: short and imperative, with no Conventional Commit prefix ("RSVP lookup by invite code", not "feat: …"). The branch slug is derived from it, so keep it under about 50 characters.
    - Body: fill **every** template section from what the user said. Write acceptance criteria as checkable outcomes. Sections that don't apply get a short answer ("None", "Visual only"), not a blank.
-   - **Fill gaps with `AskUserQuestion`, don't guess.** Ask in one call (up to four questions) for what the user didn't say and you can't reasonably infer: area (backend / frontend / infra / docs, multi-select), priority (feature) or severity (bug), and whether real guest data is involved (bug). Recommended option first. If you can't write any acceptance criteria, ask that first, as a focused question with the likely outcomes as options (the user can pick "Other" to type their own).
+   - **Fill gaps with `AskUserQuestion`, don't guess.** For each template section the user didn't cover and you can't reasonably infer, ask. The usual gaps are area (backend / frontend / infra / docs, multi-select), priority (feature) or severity (bug), whether real guest data is involved (bug), dependencies, decisions relied on, and config/PII impact. Put the recommended option first.
+   - **Four questions per call at most.** If there are more, ask the most important four first (acceptance criteria, then bug-vs-feature, area, priority/severity), then make a second call for the rest. Don't drop questions to fit.
+   - If you can't write any acceptance criteria, ask that first, as a focused question with the likely outcomes as options (the user can pick "Other" to type their own).
+   - Never write "None" for Dependencies, Decisions relied on, or Config/PII impact just because the user didn't mention them. Ask, or put the unknown under Notes as an open question. "None" must mean the user said so.
    - Anything still unknown goes under Notes as an open question, not an invented answer.
 
 3. **Check for PII before it leaves the machine.** Issues are public in this repo. Replace any real guest names, emails, phone numbers, addresses, or RSVP details with obvious fakes (`Jane Doe`, `guest@example.com`), and tell the user you did.

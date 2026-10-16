@@ -28,7 +28,7 @@ Fix failures before going on. A red PR wastes the reviewer's attention.
 ```bash
 python3 .claude/skills/create-pr/scripts/pii-scan.py
 ```
-It flags real-looking emails, phone numbers, and street addresses in added lines (exit 1). For each hit, ask with `AskUserQuestion` (one question per hit, or one per file if there are many): **Replace with a fake (Recommended)** / **Mark `pii-ok`** (only for genuinely public wedding info such as the venue address) / **Stop**. Never add a `pii-ok` marker without that explicit choice. The script can't recognize names, so also skim added fixtures, seed data, and test data for real-looking names. This repo is public, and once something is pushed it's effectively published.
+It flags real-looking emails, phone numbers, and street addresses in added lines (exit 1). For each hit, ask with `AskUserQuestion` (one question per hit, or one per file if there are many): **Replace with a fake (Recommended)** / **Stop**. Add **Mark `pii-ok`** as an option only when the value looks like genuinely public wedding info (the venue address, a public schedule); never offer it for a value that could be a guest's. Never add a `pii-ok` marker without that explicit choice. The script can't recognize names, so also skim added fixtures, seed data, and test data for real-looking names. This repo is public, and once something is pushed it's effectively published.
 
 **Fix the history, not just the tip.** The scan reads the branch's net diff, but every commit gets pushed. A follow-up "remove PII" commit still publishes the data in the earlier one. If any PII came from a commit that hasn't been pushed yet (`git log origin/<branch>..` or, for a never-pushed branch, everything since `origin/main`), ask with `AskUserQuestion`: **Rewrite the unpushed commits (Recommended)** / **Stop**. On a rewrite, amend, or `git reset --soft origin/main` and recommit. Then confirm it's gone with `git log -p origin/main..HEAD | grep -nF '<value>'`. If the commit was **already pushed**, stop and tell the user (no prompt: there is nothing safe to offer). Removing it then needs a force push (blocked here on purpose) and possibly GitHub support, and that's their call.
 
@@ -42,6 +42,7 @@ Run `/code-review` on the branch. If it returns findings, summarize them (file, 
 - **Body:** read `.github/pull_request_template.md` and fill it in. It's the single source of truth for PR structure, so don't invent another format.
   - Link the issue: `Closes #<#>`. For an epic's spec PR (the branch adds `specs/<#>-*/` and the issue is labeled `epic`), use `Part of #<#>` so merging the spec doesn't close the epic.
   - "How it was tested" lists the real commands you ran and what they showed.
+  - If code review findings were left unfixed (the user chose to leave some), list each in the body as a short paraphrase of the problem and why it was left. Don't quote flagged lines, since they may contain what you were avoiding publishing.
   - Tick only the checklist items that are actually true.
   - End with the attribution line from the session's git instructions, if one is set.
 - Write the body to a scratchpad file. Passing it with `--body-file` keeps the secrets hook from tripping on text that mentions secrets paths.
