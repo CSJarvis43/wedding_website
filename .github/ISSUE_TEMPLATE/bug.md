@@ -13,6 +13,18 @@ labels: bug
 
 1.
 
+## Severity
+
+<!-- Blocks guests or the admin / wrong but has a workaround / cosmetic. -->
+
+## Area
+
+<!-- backend / frontend / infra / docs. Add the matching label (docs uses `documentation`). -->
+
+## Real guest data involved?
+
+<!-- Yes or no. If yes, describe it with fakes (Jane Doe, guest@example.com). Never paste the real values. -->
+
 ## Environment
 
 <!-- Browser/device, local or deployed, commit or PR. -->

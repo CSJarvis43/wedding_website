@@ -7,7 +7,11 @@ labels: enhancement
 
 ## Goal
 
-<!-- What should a guest or admin be able to do, and why? -->
+<!-- What should be possible, and why? -->
+
+## Who it's for
+
+<!-- Guest, admin, or the couple. One line user story: "As a guest, I want to ..., so that ...". -->
 
 ## Scope
 
@@ -16,6 +20,30 @@ labels: enhancement
 ## Acceptance criteria
 
 - [ ]
+
+## Area
+
+<!-- backend / frontend / infra / docs (pick all that apply). Add the matching label (docs uses `documentation`). -->
+
+## Priority
+
+<!-- Must-have for the wedding, nice-to-have, or later. -->
+
+## Dependencies
+
+<!-- Blocked by #N, or "None". -->
+
+## Config / PII impact
+
+<!-- New settings (placeholders go in .env.example)? New personal data stored or shown? "None" is fine. -->
+
+## Decisions relied on
+
+<!-- Entries in docs/decisions.md this depends on, or a decision this needs made first. -->
+
+## Testing notes
+
+<!-- What needs a test first (logic, endpoints, forms). Purely visual work can say "visual only". -->
 
 ## Notes
 
