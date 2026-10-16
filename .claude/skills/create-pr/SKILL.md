@@ -28,13 +28,13 @@ Fix failures before going on. A red PR wastes the reviewer's attention.
 ```bash
 python3 .claude/skills/create-pr/scripts/pii-scan.py
 ```
-It flags real-looking emails, phone numbers, and street addresses in added lines (exit 1). For each hit, replace the value with an obvious fake, or, if it's genuinely public wedding info such as the venue address, ask the user before adding a `pii-ok` marker on that line. The script can't recognize names, so also skim added fixtures, seed data, and test data for real-looking names. This repo is public, and once something is pushed it's effectively published.
+It flags real-looking emails, phone numbers, and street addresses in added lines (exit 1). For each hit, ask with `AskUserQuestion` (one question per hit, or one per file if there are many): **Replace with a fake (Recommended)** / **Mark `pii-ok`** (only for genuinely public wedding info such as the venue address) / **Stop**. Never add a `pii-ok` marker without that explicit choice. The script can't recognize names, so also skim added fixtures, seed data, and test data for real-looking names. This repo is public, and once something is pushed it's effectively published.
 
-**Fix the history, not just the tip.** The scan reads the branch's net diff, but every commit gets pushed. A follow-up "remove PII" commit still publishes the data in the earlier one. If any PII came from a commit that hasn't been pushed yet (`git log origin/<branch>..` or, for a never-pushed branch, everything since `origin/main`), rewrite those commits before pushing: amend, or `git reset --soft origin/main` and recommit. Then confirm it's gone with `git log -p origin/main..HEAD | grep -nF '<value>'`. If the commit was **already pushed**, stop and tell the user. Removing it then needs a force push (blocked here on purpose) and possibly GitHub support, and that's their call.
+**Fix the history, not just the tip.** The scan reads the branch's net diff, but every commit gets pushed. A follow-up "remove PII" commit still publishes the data in the earlier one. If any PII came from a commit that hasn't been pushed yet (`git log origin/<branch>..` or, for a never-pushed branch, everything since `origin/main`), ask with `AskUserQuestion`: **Rewrite the unpushed commits (Recommended)** / **Stop**. On a rewrite, amend, or `git reset --soft origin/main` and recommit. Then confirm it's gone with `git log -p origin/main..HEAD | grep -nF '<value>'`. If the commit was **already pushed**, stop and tell the user (no prompt: there is nothing safe to offer). Removing it then needs a force push (blocked here on purpose) and possibly GitHub support, and that's their call.
 
 ## 3. Review the code
 
-Run `/code-review` on the branch and address the findings: fix what's real, and note anything deliberately left as is for the PR description. Re-run the step 1 checks if you changed code.
+Run `/code-review` on the branch. If it returns findings, summarize them (file, one-line problem, your read on whether it's real) and ask with `AskUserQuestion`: **Fix all that are real (Recommended)** / **Let me pick** (then ask which, multi-select) / **Leave all, note in the PR**. Fix what was chosen, and list anything deliberately left as is in the PR description. Re-run the step 1 checks if you changed code. If there are no findings, say so and move on.
 
 ## 4. Write the PR
 
@@ -46,7 +46,16 @@ Run `/code-review` on the branch and address the findings: fix what's real, and 
   - End with the attribution line from the session's git instructions, if one is set.
 - Write the body to a scratchpad file. Passing it with `--body-file` keeps the secrets hook from tripping on text that mentions secrets paths.
 
-## 5. Push and open
+## 5. Confirm, then push and open
+
+Pushing publishes the commits and opening the PR publishes the text, so don't do either without an explicit "Open".
+
+1. Print the exact PR title and the full body as it will be posted (the whole text, not a summary), plus the number of commits that will be pushed.
+2. Call `AskUserQuestion` with these options, in this order: **Open (Recommended)**, **Edit**, **Cancel**.
+   - **Edit:** ask what to change (free text), update the body file, show it again and ask again.
+   - **Cancel:** stop before pushing. Nothing is pushed or opened.
+   - "Other" text is an edit request, not approval.
+3. Only after "Open":
 
 ```bash
 git push -u origin HEAD
