@@ -30,6 +30,7 @@ Build what the current issue needs. Prefer boring, well-known libraries. Any ext
 
 - **Backend:** Python 3.13 + FastAPI with `uv`. SQLModel + Alembic on Postgres. Server-side session-cookie auth for admins. `ruff` (lint + format), `pytest`.
 - **Frontend:** React + TypeScript + Vite SPA, React Router, TanStack Query, Tailwind CSS + shadcn/ui, `pnpm` on Node 24 LTS, ESLint, Prettier, Vitest + React Testing Library.
+- **Local dev:** Docker Compose runs Postgres, the backend, and the frontend. Toolchains are pinned in `mise.toml`.
 - **Hosting:** Render (static site, web service, Postgres) defined in a committed `render.yaml`. Guest photos in a private Cloudflare R2 bucket via presigned URLs.
 - **Decisions:** reasoning and rejected alternatives are recorded in `docs/decisions.md`. Changing a decision means adding a new entry there.
 - **CI:** GitHub Actions running `gitleaks`, the backend checks, and the frontend checks. All three are required to merge into `main`.
@@ -45,4 +46,4 @@ Build what the current issue needs. Prefer boring, well-known libraries. Any ext
 
 This constitution and `CLAUDE.md` are the source of truth for how work is done. Every spec, plan, and PR must comply. Amendments go through a normal PR that updates both files and bumps the version: MAJOR for removing or redefining a principle, MINOR for adding one, PATCH for clarifications.
 
-**Version**: 1.2.0 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-08
+**Version**: 1.2.1 | **Ratified**: 2026-10-08 | **Last Amended**: 2026-10-17

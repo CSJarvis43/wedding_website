@@ -1,0 +1,7 @@
+# Toolchain versions for local development. Run `mise install` after cloning.
+# CI reads .python-version (uv) and frontend/package.json "packageManager" (pnpm).
+[tools]
+python = "3.13.16"
+node = "24.22.0"
+uv = "0.11.20"
+pnpm = "10.34.7"
