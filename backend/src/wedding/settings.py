@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=ENV_FILE, extra="ignore")
 
     database_url: str
-    app_env: str = "development"
+    app_env: str
 
 
 @lru_cache
