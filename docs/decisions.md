@@ -79,6 +79,20 @@ Photos are PII: access rules are decided in the photo-uploads feature spec.
 
 ---
 
+## D7: Local development: Docker Compose + mise (2026-10-17)
+
+**Context:** Development needs a real Postgres (D3), the FastAPI backend, and the Vite frontend running together, with the same tool versions on every machine and in CI.
+
+**Decision:** `docker compose up` runs the whole stack: Postgres 17, the backend (Alembic migrations on start, then uvicorn with auto-reload), and the Vite dev server on port 3000, with source bind-mounted for hot reload. The Dockerfiles are for local development only. Toolchains (Python, Node, uv, pnpm) are pinned to exact versions in a committed `mise.toml`, so native test, lint, and editor tooling match the containers. CI keeps reading `.python-version` and `packageManager`.
+
+**Why:** One command gives a working stack with a real database, and nothing but Docker and mise has to be installed. Pinned versions stop a Homebrew upgrade from quietly drifting a laptop away from CI.
+
+**Rejected:** Postgres-only Compose with the apps run natively, which means juggling three terminals. Running tests and lint only inside containers, which is slow and awkward for editor tooling. Homebrew-installed toolchains with versions listed in the README, which nothing enforces.
+
+**Also reconfirmed:** Postgres (D3) over SQLite. SQLite would handle the load, but on Render it means a persistent disk attached to the web service (downtime on each deploy) and backups we'd have to run ourselves, for example with Litestream to R2. Managed Postgres with backups costs about $6/mo and protects the one dataset we can't lose, and Compose makes it cheap to run locally.
+
+---
+
 ## Still open
 
 - Guest lookup method (name match vs invite code)

@@ -17,6 +17,7 @@ A wedding website with a Python backend API and a React frontend. Guests read ev
 | Frontend package manager | `pnpm`, Node 24 LTS |
 | Frontend lint/format | ESLint, Prettier |
 | Frontend tests | Vitest + React Testing Library |
+| Local dev | Docker Compose (Postgres + backend + frontend); toolchains pinned in `mise.toml` |
 | Hosting | Render (static site + web service + Postgres), defined in `render.yaml` |
 | Photo storage | Cloudflare R2 (private bucket, presigned uploads) |
 | Secret scanning | `gitleaks` (CI) |
@@ -36,7 +37,7 @@ specs/      Spec Kit specs for large work (specs/<#>-<slug>/)
 .github/    CI workflow, PR and issue templates
 ```
 
-`backend/` and `frontend/` don't exist yet. CI skips each one until it does.
+`docker-compose.yml`, `mise.toml`, and `.env.example` live at the repo root.
 
 ## PII and secrets: hard rule
 
@@ -100,6 +101,13 @@ Claude Code hooks (run from the repo root). Run these after changing anything in
 
 ```bash
 bash .claude/hooks/tests/run.sh
+```
+
+Local stack (run from the repo root; see `README.md` for first-time setup):
+
+```bash
+mise install                 # pinned Python, Node, uv, pnpm
+docker compose up --build    # Postgres + API on :8000 + site on :3000
 ```
 
 Backend (run from `backend/`):
