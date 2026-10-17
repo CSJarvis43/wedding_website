@@ -65,5 +65,26 @@ check 0 require-worktree.sh "$(file Edit "$WT/README.md")" "edit in worktree"
 check 0 require-worktree.sh "$(file Write "$WT/backend/new/deep.py")" "new file in worktree"
 check 0 require-worktree.sh "$(file Write "$TMP/outside.md")" "file outside any repo"
 
+# --- mise-shims (SessionStart): stub mise prints a fake shims PATH line ---
+STUB=$TMP/stub-bin
+mkdir -p "$STUB"
+printf '#!/bin/sh\n[ "$1" = activate ] && echo '"'"'export PATH="/fake/mise/shims:$PATH"'"'"'\n' > "$STUB/mise"
+chmod +x "$STUB/mise"
+shims() { # expected-exit path env-file(or "") description
+  local want=$1 path=$2 envf=$3 desc=$4 got
+  echo '{}' | env PATH="$path" ${envf:+CLAUDE_ENV_FILE="$envf"} "$HOOKS/mise-shims.sh" >/dev/null 2>&1; got=$?
+  if [ "$got" = "$want" ]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL [mise-shims.sh] $desc: want exit $want, got $got"; fi
+}
+expect_file() { # grep-pattern(or "" for empty) file description
+  if { [ -z "$1" ] && [ ! -s "$2" ]; } || { [ -n "$1" ] && grep -q "$1" "$2"; }; then
+    pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL [mise-shims.sh] $3"; fi
+}
+: > "$TMP/env-with"; : > "$TMP/env-without"
+shims 0 "$STUB:/usr/bin:/bin" "$TMP/env-with" "mise installed, env file given"
+expect_file '/fake/mise/shims' "$TMP/env-with" "env file gets the shims PATH line"
+shims 0 "/usr/bin:/bin" "$TMP/env-without" "no mise installed"
+expect_file '' "$TMP/env-without" "env file left empty without mise"
+shims 0 "$STUB:/usr/bin:/bin" "" "no CLAUDE_ENV_FILE"
+
 echo "hook tests: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
