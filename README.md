@@ -30,12 +30,11 @@ docker compose up --build
 - API: http://localhost:8000/api/health (also proxied at http://localhost:3000/api/health)
 - Postgres: `localhost:5432`, credentials from `.env`
 
-Editing files under `backend/src/` or `frontend/src/` reloads automatically. The backend runs `alembic upgrade head` each time it starts.
+Editing files under `backend/src/` or `frontend/src/` reloads automatically. On each start, the backend runs `alembic upgrade head` and the frontend runs `pnpm install`. Ports are bound to localhost only, so nothing is reachable from your network.
 
-Useful variations:
+Stopping:
 
 ```bash
-docker compose up --build -V      # after changing frontend dependencies (refreshes node_modules)
 docker compose down               # stop (keeps the database)
 docker compose down -v            # stop and delete the local database
 ```

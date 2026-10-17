@@ -1,11 +1,15 @@
 # Local development stack: `docker compose up --build`, then open http://localhost:3000.
-# Reads settings from .env (copy .env.example first).
+# Reads settings from .env (copy .env.example first). Ports bind to localhost only.
 services:
   db:
     image: postgres:17
-    env_file: .env
+    environment:
+      # Only what Postgres needs; app secrets in .env stay out of this container.
+      POSTGRES_USER: ${POSTGRES_USER:?set in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set in .env}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -19,9 +23,9 @@ services:
     env_file: .env
     environment:
       # Same credentials as .env, but the database host is the db service.
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:?set in .env}:${POSTGRES_PASSWORD:?set in .env}@db:5432/${POSTGRES_DB:?set in .env}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./backend:/app
     depends_on:
@@ -33,7 +37,7 @@ services:
     environment:
       API_PROXY_TARGET: http://backend:8000
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules

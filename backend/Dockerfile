@@ -1,6 +1,6 @@
 # Local development image. Source is bind-mounted by docker-compose.yml;
 # the virtualenv lives outside /app so the host's .venv never shadows it.
-FROM python:3.13-slim
+FROM python:3.13.16-slim
 
 COPY --from=ghcr.io/astral-sh/uv:0.11.20 /uv /uvx /bin/
 
