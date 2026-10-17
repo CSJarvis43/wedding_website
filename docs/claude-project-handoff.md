@@ -3,7 +3,7 @@
 Context for a Claude Project. It summarizes the decisions made so far so new conversations start from the same place. The source of truth for day-to-day conventions is `CLAUDE.md` in the repo.
 
 - **Repo:** https://github.com/CSJarvis43/wedding_website (public; contains no PII by design)
-- **Status (2026-10-17):** SDLC scaffolding done (conventions, CI, hooks with a test suite, seven workflow skills, with explicit confirmation gates before an issue is filed, a PR is opened, or a merge happens, Spec Kit), and the core stack is decided (see `docs/decisions.md`). No application code yet. Next: scaffold `backend/` and `frontend/`.
+- **Status (2026-10-17):** SDLC scaffolding and core stack decisions are done (see `docs/decisions.md`). Issue #16 scaffolds `backend/` (FastAPI, settings, `/api/health`, Alembic) and `frontend/` (Vite, Router, Query, Tailwind, shadcn), and adds a Docker Compose dev stack; `docker compose up` serves a placeholder homepage on localhost:3000. Next: the first real features.
 
 ## What we're building
 
@@ -31,6 +31,7 @@ A wedding website for guests and for the couple:
 | Photo storage | Cloudflare R2, private bucket, presigned uploads |
 | CI | GitHub Actions: gitleaks secret scan, backend checks, frontend checks |
 | Planning | Spec Kit v1.0.11 for large features; a plan template for small tasks |
+| Local dev | Docker Compose (Postgres 17, backend with auto-reload, Vite on :3000); toolchains pinned in `mise.toml` |
 
 **Why a React + Vite SPA:** the couple is comfortable with React. The site mixes static info pages with app-like features (RSVP flow, admin dashboard, uploads). A static SPA keeps all server logic in Python and is the simplest thing to host and test. SEO doesn't matter for a wedding site, and link-preview meta tags can live in the static `index.html`.
 
@@ -45,6 +46,10 @@ A wedding website for guests and for the couple:
 **Why R2:** no egress fees for a gallery guests browse repeatedly, and it's S3-compatible. Photos are PII, so access rules belong in the photo feature's spec.
 
 **Why Tailwind + shadcn/ui:** a custom guest-facing look plus accessible forms and tables for the admin, with no library theme to fight. Rejected: Mantine, plain CSS Modules.
+
+**Why Docker Compose + mise for local dev:** one command runs the full stack against a real Postgres, and pinned toolchain versions keep laptops, containers, and CI in step. Rejected: Postgres-only Compose (three terminals), tests only in containers (slow, awkward for editors), unpinned Homebrew toolchains.
+
+**Postgres reconfirmed over SQLite:** SQLite would handle the load, but on Render it needs a disk attached to the web service (deploy downtime) and self-run backups. About $6/mo of managed Postgres with backups protects the RSVP data.
 
 ## Still to decide
 
@@ -66,6 +71,6 @@ A wedding website for guests and for the couple:
   - `update-handoff`: refreshes this document.
 - **`main` is protected:** PRs only, required checks (gitleaks, backend, frontend), no force pushes. Conventional Commits.
 - **Testing:** TDD for logic (backend, API endpoints, non-trivial frontend behavior). Pure styling is exempt. Bug fixes start with a failing test.
-- **Layout:** `backend/` (Python API), `frontend/` (React app), `docs/` (decisions log, templates, handoffs), `specs/` (Spec Kit), `.worktrees/` (git-ignored).
+- **Layout:** `backend/` (Python API, package `wedding`), `frontend/` (React app), `docker-compose.yml` + `mise.toml` at the root, `docs/` (decisions log, templates, handoffs), `specs/` (Spec Kit), `.worktrees/` (git-ignored).
 - **Claude Code guardrails:** hooks block file edits outside a worktree, commits/pushes to `main`, force pushes, and any access to `.env*` / `secrets/`. Python and TypeScript files are auto-formatted after edits.
 - **Spec Kit constitution** (`.specify/memory/constitution.md`) mirrors `CLAUDE.md`, and the two change together. Principles: no PII/secrets (non-negotiable), test-first (non-negotiable), Python owns the server, small reviewable changes, simplicity.
