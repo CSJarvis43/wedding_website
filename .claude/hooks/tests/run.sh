@@ -67,24 +67,32 @@ check 0 require-worktree.sh "$(file Write "$TMP/outside.md")" "file outside any 
 
 # --- mise-shims (SessionStart): stub mise prints a fake shims PATH line ---
 STUB=$TMP/stub-bin
-mkdir -p "$STUB"
-printf '#!/bin/sh\n[ "$1" = activate ] && echo '"'"'export PATH="/fake/mise/shims:$PATH"'"'"'\n' > "$STUB/mise"
-chmod +x "$STUB/mise"
+mkdir -p "$STUB" "$TMP/nomise" "$TMP/badstub"
+printf '#!/bin/sh\n[ "$1" = activate ] && [ "$2" = bash ] && [ "$3" = --shims ] && echo '"'"'export PATH="/fake/mise/shims:$PATH"'"'"'\n' > "$STUB/mise"
+printf '#!/bin/sh\nexit 1\n' > "$TMP/badstub/mise"
+chmod +x "$STUB/mise" "$TMP/badstub/mise"
+ln -sf "$(command -v bash)" "$TMP/nomise/bash" # a PATH that has bash but no mise
 shims() { # expected-exit path env-file(or "") description
   local want=$1 path=$2 envf=$3 desc=$4 got
-  echo '{}' | env PATH="$path" ${envf:+CLAUDE_ENV_FILE="$envf"} "$HOOKS/mise-shims.sh" >/dev/null 2>&1; got=$?
+  local envargs=(PATH="$path")
+  [ -n "$envf" ] && envargs+=(CLAUDE_ENV_FILE="$envf")
+  echo '{}' | env "${envargs[@]}" "$HOOKS/mise-shims.sh" >/dev/null 2>&1; got=$?
   if [ "$got" = "$want" ]; then pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL [mise-shims.sh] $desc: want exit $want, got $got"; fi
 }
 expect_file() { # grep-pattern(or "" for empty) file description
   if { [ -z "$1" ] && [ ! -s "$2" ]; } || { [ -n "$1" ] && grep -q "$1" "$2"; }; then
     pass=$((pass + 1)); else fail=$((fail + 1)); echo "FAIL [mise-shims.sh] $3"; fi
 }
-: > "$TMP/env-with"; : > "$TMP/env-without"
+: > "$TMP/env-with"; : > "$TMP/env-without"; : > "$TMP/env-bad"
 shims 0 "$STUB:/usr/bin:/bin" "$TMP/env-with" "mise installed, env file given"
-expect_file '/fake/mise/shims' "$TMP/env-with" "env file gets the shims PATH line"
-shims 0 "/usr/bin:/bin" "$TMP/env-without" "no mise installed"
+expect_file '/fake/mise/shims' "$TMP/env-with" "env file gets the shims PATH line (stub requires 'activate bash --shims')"
+shims 0 "$STUB:/usr/bin:/bin" "$TMP/env-with" "second firing"
+[ "$(grep -c '/fake/mise/shims' "$TMP/env-with")" = 1 ] && pass=$((pass + 1)) || { fail=$((fail + 1)); echo "FAIL [mise-shims.sh] repeat firing duplicated the PATH line"; }
+shims 0 "$TMP/nomise" "$TMP/env-without" "no mise installed"
 expect_file '' "$TMP/env-without" "env file left empty without mise"
 shims 0 "$STUB:/usr/bin:/bin" "" "no CLAUDE_ENV_FILE"
+shims 1 "$TMP/badstub:/usr/bin:/bin" "$TMP/env-bad" "mise activate fails"
+expect_file '' "$TMP/env-bad" "env file left empty when mise activate fails"
 
 echo "hook tests: $pass passed, $fail failed"
 [ "$fail" -eq 0 ]
