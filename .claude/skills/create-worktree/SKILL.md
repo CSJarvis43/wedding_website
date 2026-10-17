@@ -22,13 +22,16 @@ All development in this repo happens in a git worktree, one per issue, under `.w
 
 3. **Move into the worktree.** `cd <path>` so later commands run there. From now on, edit files under that path only.
 
-4. **Install dependencies** if the parts exist, so tests can run right away:
-   - `backend/pyproject.toml` exists → `cd backend && uv sync`
-   - `frontend/package.json` exists → `cd frontend && pnpm install`
+4. **Have the user set up the worktree.** A new worktree has no `.env` (it's git-ignored), and mise won't activate the pinned toolchains until the folder is trusted, so `pnpm` isn't available yet. You can't create, copy, or link the env file yourself (the secrets hook blocks it, by design), so give the user this line to run, with the real paths substituted:
+   ```
+   ! ln -s <main checkout>/.env <worktree path>/.env && mise trust <worktree path>
+   ```
+   - The symlink means every worktree shares the main checkout's `.env`: one file to edit, and changes reach every worktree. Removing the worktree deletes only the link, never the main file.
+   - If the main checkout has no `.env` yet, the user creates it first by running `cp .env.example .env` in the main checkout. You can't check this for them.
+   - Wait until the user says it's done. Don't run, verify, or work around this step.
 
-5. **Environment file.** The real env file is git-ignored, so it doesn't follow into new worktrees, and you can't copy it (the secrets hook blocks it). If the main checkout has one and this task needs it, give the user this line to run (substituting the real path):
-   ```
-   ! cp <main checkout>/.env <worktree path>/.env
-   ```
+5. **Install dependencies** if the parts exist, so tests can run right away:
+   - `backend/pyproject.toml` exists → `cd backend && mise x -- uv sync`
+   - `frontend/package.json` exists → `cd frontend && mise x -- pnpm install`
 
 6. **Report:** the branch, the path, and the next step. That's usually `plan-task <#>`. If a plan for this issue already exists (a comment starting with `<!-- issue-plan -->`, checked with `gh api --paginate repos/{owner}/{repo}/issues/<#>/comments --jq '.[] | select(.body | startswith("<!-- issue-plan -->")) | .id'`, or `specs/<#>-*/`), say so and suggest `start-work` instead.
