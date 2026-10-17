@@ -20,8 +20,6 @@
       "Bash(uv run pytest *)",
       "Bash(uv run ruff *)",
       "Bash(pnpm install *)",
-      "Bash(mise x -- uv sync *)",
-      "Bash(mise x -- pnpm install *)",
       "Bash(pnpm test *)",
       "Bash(pnpm lint *)",
       "Bash(pnpm format *)",
@@ -39,6 +37,16 @@
     ]
   },
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/mise-shims.sh"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "Bash",

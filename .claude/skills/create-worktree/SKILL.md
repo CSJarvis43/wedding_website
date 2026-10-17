@@ -31,7 +31,9 @@ All development in this repo happens in a git worktree, one per issue, under `.w
    - Wait until the user says it's done. Don't run, verify, or work around this step.
 
 5. **Install dependencies** if the parts exist, so tests can run right away:
-   - `backend/pyproject.toml` exists → `cd backend && mise x -- uv sync`
-   - `frontend/package.json` exists → `cd frontend && mise x -- pnpm install`
+   - `backend/pyproject.toml` exists → `cd backend && uv sync`
+   - `frontend/package.json` exists → `cd frontend && pnpm install`
+
+   These resolve to the pinned versions through mise's shims, which `.claude/hooks/mise-shims.sh` puts on PATH at session start. The shims still need the worktree's `mise.toml` to be trusted (step 4), so install dependencies only after that.
 
 6. **Report:** the branch, the path, and the next step. That's usually `plan-task <#>`. If a plan for this issue already exists (a comment starting with `<!-- issue-plan -->`, checked with `gh api --paginate repos/{owner}/{repo}/issues/<#>/comments --jq '.[] | select(.body | startswith("<!-- issue-plan -->")) | .id'`, or `specs/<#>-*/`), say so and suggest `start-work` instead.

@@ -72,5 +72,5 @@ A wedding website for guests and for the couple:
 - **`main` is protected:** PRs only, required checks (gitleaks, backend, frontend), no force pushes. Conventional Commits.
 - **Testing:** TDD for logic (backend, API endpoints, non-trivial frontend behavior). Pure styling is exempt. Bug fixes start with a failing test.
 - **Layout:** `backend/` (Python API, package `wedding`), `frontend/` (React app), `docker-compose.yml` + `mise.toml` at the root, `docs/` (decisions log, templates, handoffs), `specs/` (Spec Kit), `.worktrees/` (git-ignored).
-- **Claude Code guardrails:** hooks block file edits outside a worktree, commits/pushes to `main`, force pushes, and any access to `.env*` / `secrets/`. Python and TypeScript files are auto-formatted after edits.
+- **Claude Code guardrails:** hooks block file edits outside a worktree, commits/pushes to `main`, force pushes, and any access to `.env*` / `secrets/`. Python and TypeScript files are auto-formatted after edits. A SessionStart hook puts mise's shims on PATH, so Claude's non-interactive shell uses the pinned toolchain versions.
 - **Spec Kit constitution** (`.specify/memory/constitution.md`) mirrors `CLAUDE.md`, and the two change together. Principles: no PII/secrets (non-negotiable), test-first (non-negotiable), Python owns the server, small reviewable changes, simplicity.

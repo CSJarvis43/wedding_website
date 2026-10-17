@@ -103,6 +103,8 @@ Claude Code hooks (run from the repo root). Run these after changing anything in
 bash .claude/hooks/tests/run.sh
 ```
 
+Tools (`uv`, `pnpm`, `node`, `python`) resolve to the versions pinned in `mise.toml`. In Claude Code's non-interactive shell this works through mise's shims, which `.claude/hooks/mise-shims.sh` puts on PATH at session start, so run the commands below as written, without `mise x --`. If `which pnpm` doesn't point into mise's shims directory, the hook did nothing (mise missing, or it printed an error at session start). Fix that rather than falling back to system tools.
+
 Local stack (run from the repo root; see `README.md` for first-time setup):
 
 ```bash
