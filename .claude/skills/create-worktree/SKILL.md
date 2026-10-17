@@ -22,12 +22,12 @@ All development in this repo happens in a git worktree, one per issue, under `.w
 
 3. **Move into the worktree.** `cd <path>` so later commands run there. From now on, edit files under that path only.
 
-4. **Have the user set up the worktree.** A new worktree has no `.env` (it's git-ignored), and mise won't activate the pinned toolchains until the folder is trusted, so `pnpm` isn't available yet. You can't create, copy, or link the env file yourself (the secrets hook blocks it, by design), so give the user this line to run, with the real paths substituted:
+4. **Have the user set up the worktree** (when the script printed `status=created`; for `status=exists`, only if the user says it isn't set up yet). A new worktree has no `.env` (it's git-ignored), and mise won't activate the pinned toolchains until the folder is trusted, so `pnpm` isn't available yet. You can't create, copy, or link the env file yourself (the secrets hook blocks it, by design), so give the user this line to run, with the real paths substituted:
    ```
-   ! ln -s <main checkout>/.env <worktree path>/.env && mise trust <worktree path>
+   ! test -f <main checkout>/.env && ln -s <main checkout>/.env <worktree path>/.env && mise trust <worktree path>
    ```
    - The symlink means every worktree shares the main checkout's `.env`: one file to edit, and changes reach every worktree. Removing the worktree deletes only the link, never the main file.
-   - If the main checkout has no `.env` yet, the user creates it first by running `cp .env.example .env` in the main checkout. You can't check this for them.
+   - If the line stops without output (`test -f` failed), the main checkout has no `.env` yet. The user creates it by running `cp .env.example .env` in the main checkout, then reruns the line. You can't check this for them.
    - Wait until the user says it's done. Don't run, verify, or work around this step.
 
 5. **Install dependencies** if the parts exist, so tests can run right away:
