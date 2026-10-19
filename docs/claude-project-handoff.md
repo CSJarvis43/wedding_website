@@ -3,21 +3,27 @@
 Context for a Claude Project. It summarizes the decisions made so far so new conversations start from the same place. The source of truth for day-to-day conventions is `CLAUDE.md` in the repo.
 
 - **Repo:** https://github.com/CSJarvis43/wedding_website (public; contains no PII by design)
-- **Status (2026-10-19):** The project is scaffolded (#16): `backend/` (FastAPI, settings, `/api/health`, Alembic), `frontend/` (Vite, Router, Query, Tailwind, shadcn), and a Docker Compose dev stack. The guest lookup and email decisions are made (D8, D9). Next: designing the core data model (#23), then address collection.
+- **Status (2026-10-19):** The project is scaffolded (#16): `backend/` (FastAPI, settings, `/api/health`, Alembic), `frontend/` (Vite, Router, Query, Tailwind, shadcn), and a Docker Compose dev stack. The guest lookup and email decisions are made (D8, D9), and the core data model is designed (`docs/data-model.md`, D10). Next: the SQLModel models and first migration, then address collection.
 
 ## What we're building
 
 A wedding website for guests and for the couple:
 
 1. **Info pages:** our story, schedule, venue and travel, accommodations, FAQ.
-2. **Address collection (first, before invitations are mailed):** each household gets a personal link, sent by hand by the couple, where guests submit their mailing address.
-3. **RSVP with guest lookup:** a guest finds their household by name and RSVPs for everyone in it, marking each person attending or not, adding any allowed plus-ones by name, and giving meal choice and dietary notes.
+2. **Address collection (first, before invitations are mailed):** each household gets a personal link (also available as a QR code), sent by hand by the couple, where guests submit their mailing address.
+3. **RSVP with guest lookup:** a guest arrives by their link/QR or finds their household by name, then answers for everyone in it on one form: yes/no (or maybe, where an event allows it) per person per event, any allowed plus-ones by name, and optional dietary notes. No meal choices (buffet). Answers can be changed until one site-wide deadline, about a month out.
 4. **Registry.**
-5. **Photo uploads after the wedding:** guests upload photos they took.
-6. **Admin dashboard:** the couple logs in to manage the guest list and households, copy each household's link, see who has sent an address, and view and export RSVPs.
+5. **Photo uploads after the wedding:** guests upload photos they took. Each photo needs the couple's approval, and the gallery is only for recognized households.
+6. **Admin dashboard:** the couple logs in to manage households, guests, and events, copy each household's link or QR, see who has sent an address, approve photos, view and export RSVPs, and see or restore anything removed.
 7. **Announcements:** email to guests sent from the app.
 
-**Core data model (#23, being designed):** the household is the unit that's invited, with one invitation and one RSVP. It holds a private link token, a mailing address, and a plus-one allowance (default 0). Guests belong to a household and have first name, last name, an optional nickname, and a flag if the household added them. The RSVP is one submission per household, with attendance recorded per guest. Still open for the model: whether guests can edit an RSVP (and whether to keep history), multiple events with per-event invites, RSVP deadlines, meal choices, and photo approval.
+**Core data model (designed in #23; see `docs/data-model.md`):**
+- **Tables:** `household`, `guest`, `event`, `event_invitee`, `rsvp_response`, `photo`, `admin_user`, `admin_session`, plus an `RSVP_DEADLINE` setting.
+- **Household:** the unit that's invited, with one invitation and one RSVP. It holds the display name (also the envelope line), a US mailing address, a never-expiring resettable link token, and a plus-one allowance.
+- **Guest:** first and last name, an optional search-only nickname, optional dietary notes, and a flag for plus-ones the household added.
+- **Events:** the welcome party, rehearsal (invited-only, no RSVP), wedding (no "maybe"), and after party. Each event says who's invited (everyone, or a per-guest list), whether it takes RSVPs, and whether "maybe" is allowed.
+- **Answers:** stored per guest per event and overwritten on change, with no history.
+- **Removing things:** households, guests, and events are soft deleted. A permanent delete is only for erasure requests.
 
 ## Tech stack (decided)
 
@@ -33,7 +39,8 @@ A wedding website for guests and for the couple:
 | Styling | Tailwind CSS + shadcn/ui |
 | Hosting | Render: static site + web service + Postgres, defined in `render.yaml` (about $13–30/mo; confirm on render.com/pricing) |
 | Photo storage | Cloudflare R2, private bucket, presigned uploads |
-| Guest lookup | Personal household link for address collection; name lookup for RSVP (last name must match, first name forgiving) |
+| Guest lookup | Two ways in, same result: a personal household link/QR, or name lookup (last name must match, first name forgiving); both set a signed household cookie |
+| Data model conventions | Soft deletes, name matching in Python, link tokens stored as is, integer IDs (D10) |
 | Email | Resend for app-sent email (announcements, maybe RSVP confirmations) |
 | CI | GitHub Actions: gitleaks secret scan, backend checks, frontend checks |
 | Planning | Spec Kit v1.0.11 for large features; a plan template for small tasks |
@@ -61,9 +68,13 @@ A wedding website for guests and for the couple:
 
 **Why Resend:** a simple API with a Python SDK, and a free tier that covers a wedding's volume. The first address requests are sent by hand from the couple's own accounts, which reach inboxes better. It needs a sending domain with SPF/DKIM/DMARC and a `RESEND_API_KEY`, both added with the first email feature. Rejected: Postmark (tiny free tier), Amazon SES (fiddly setup), Brevo (marketing-oriented), texts sent from the app (US 10DLC registration).
 
+**Why these data model conventions (D10):** soft deletes mean nobody silently drops off the guest list. Matching names in Python is instant at this scale and keeps the rules easy to test. Link tokens are stored as is because a hashed token could only be shown once, which rules out copying links and printing QR codes at any time; anyone who could read the token could already read the addresses beside it. Rejected: hard deletes by default, Postgres `unaccent`/`pg_trgm`, stored cleaned-up name columns, hashed link tokens, UUID keys.
+
 ## Still to decide
 
-- **Photo rules:** size limits, moderation, and who can see the gallery (decide in the photo-uploads spec).
+- **Photo rules:** size limits, file types, and storage rules (decide in the photo-uploads spec). Approval and gallery access are decided.
+- **Lookup rate limits:** the numbers (decide in the RSVP API work).
+- **"Maybe" on the welcome party and after party:** a per-event switch, flippable any time.
 - **Registry:** links to external registries or a built-in fund.
 - **Visual design** and branding.
 
