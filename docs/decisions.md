@@ -93,8 +93,35 @@ Photos are PII: access rules are decided in the photo-uploads feature spec.
 
 ---
 
+## D8: Guest lookup: household link + name lookup (2026-10-19)
+
+**Context:** Guests come to the site twice. First, before invitations are mailed, the couple needs everyone's mailing address. A paper save-the-date has already gone out, and the address request goes out by text or email. Later, guests RSVP with a paper invitation in hand. The couple will have the full guest list, grouped by household, before any address request is sent. Some guests aren't comfortable with tech.
+
+**Decision:** The household is the unit that's invited. It has one invitation and one RSVP.
+
+- **Address collection:** each household gets a personal link carrying a private, unguessable token. The couple copies it from the admin dashboard and sends it by hand from personal email or phone. The page greets the household by name and only accepts an address. It never shows a stored address back. The dashboard shows which households have responded.
+- **RSVP:** guests look themselves up by name. The last name must match some member of the household, ignoring case, extra whitespace, and accents, and either part of a hyphenated surname counts. The first name is forgiving: small typos, prefixes ("Rob" finds Robert), and an optional nickname the couple can store. Nothing is shown until both names match. If nothing matches, the page asks the guest to contact the couple. The personal household link also opens the RSVP.
+- **RSVP shape:** whoever fills in the form marks each person in the household as attending or not. A household may be allowed a number of extra guests (default 0), and the form lets them add up to that many by name. Those guests are recorded as added by the household and aren't used for name lookup.
+
+**Why:** A link sent digitally needs no typing at all, and nobody has to print a code on every invitation. A last-name match plus a loose first name lets guests who use a nickname or make a typo find themselves without listing anyone else's names. Recording attendance per person gives the headcount, meal choices, and seating that a household-level yes/no can't.
+
+**Rejected:** Invite codes printed on the paper invitations, which are awkward to type and add a printing step. One generic address link where guests type their own names, which leaves the couple matching replies by hand and handling duplicates from the same household. Strict exact-name lookup, which strands anyone who goes by a nickname. Loose lookup that lists partial matches, which exposes guest names to anyone typing a common surname.
+
+---
+
+## D9: Email: Resend (2026-10-19)
+
+**Context:** The app will need to send some email: announcements to guests, and maybe RSVP confirmations. The volume is small, a few hundred households over a few rounds.
+
+**Decision:** App-sent email goes through Resend. The first address requests (D8) are sent by hand from the couple's own email and phone, not from the app. Sending needs a domain the couple controls, with SPF, DKIM, and DMARC records, and a Resend API key read from the environment. Both are added with the first feature that sends email.
+
+**Why:** A simple API with a Python SDK, and a free tier that covers a wedding's volume. A personal note from the couple's own account lands in inboxes better than anything from a new sending domain, which is why the first requests go by hand.
+
+**Rejected:** Postmark, which delivers well but has a very small free tier. Amazon SES, which is the cheapest at scale but fiddly to set up and get approved for sending. Brevo, which is geared toward marketing campaigns. Texts sent from the app, which in the US require registering a business sender (10DLC) before sending.
+
+---
+
 ## Still open
 
-- Guest lookup method (name match vs invite code)
 - Registry (links to external registries vs a built-in fund)
 - Visual design and branding
