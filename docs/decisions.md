@@ -121,6 +121,22 @@ Photos are PII: access rules are decided in the photo-uploads feature spec.
 
 ---
 
+## D10: Data model conventions (2026-10-19)
+
+**Context:** The core schema (`docs/data-model.md`) holds the guest list, addresses, RSVPs, and photos for a few hundred households. A few choices in it will shape every feature built on top of it, so they're recorded here as well as in the design.
+
+**Decision:**
+- **Soft delete.** Households, guests, and events are removed by setting `deleted_at`, never by deleting the row. Removed rows are hidden from the site, name lookup, links, headcounts, and exports, and the dashboard can show and restore them. A permanent, cascading delete exists only for erasure requests.
+- **Name matching in Python.** Lookup cleans up names (case, accents, punctuation, spaces) and matches them in application code over the guest list. There are no stored copies of cleaned-up names and no Postgres extensions.
+- **Link tokens stored as is.** Household link tokens are 128-bit random strings, stored unhashed so the dashboard can show the link and QR at any time. They never expire and can be reset. Admin session tokens are still stored hashed.
+- **Integer IDs.** Primary keys are auto-increment integers. Guests reach their data only through a link token or the signed household cookie, never by ID.
+
+**Why:** Soft deletes keep anyone from silently dropping off the list, which matters more here than tidy tables. At this scale, matching in Python is instant, and the rules stay ordinary functions that are easy to test and adjust. A hashed link token could only be shown once, which defeats copying links and printing QR codes, and anyone who could read the token could already read the addresses beside it.
+
+**Rejected:** Hard deletes by default, which make a removed guest indistinguishable from one who was never added. Postgres `unaccent` and `pg_trgm` for lookup, which are harder to test and tune and need extensions installed. Stored cleaned-up name columns, which can fall out of sync with the real names. Hashed link tokens. UUID primary keys, which add nothing when IDs never reach guests.
+
+---
+
 ## Still open
 
 - Registry (links to external registries vs a built-in fund)
